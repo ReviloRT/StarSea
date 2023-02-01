@@ -10,3 +10,4 @@ Created vector objects for both 2D and 3D vectors and populated with operator fu
 
 Notes to self:
 Compile command: g++ -o ./main ./main.cpp
+Compile command: g++ -o ./test ./test.cpp

@@ -1,21 +1,27 @@
 
 #include <iostream>
 #include <cassert>
+
+#define DIMVECT vector2
+
 #include "vectors.cpp"
+#include "SpaceObj.cpp"
 
 using namespace std;
 
 void testVectors();
+void testSpaceObj();
 
 int main() {
 
   testVectors();
+  testSpaceObj();
 
   cout << "Tests Completed, all successful" << endl;
 }
 
 void testVectors() {
-  cout << "Testing vectors" << endl;
+  cout << "Testing Vectors" << endl;
   // Testing 2D vectors
   {
     // Test constructors
@@ -40,6 +46,13 @@ void testVectors() {
       vector2 vect5 = vect3;
       assert(vect5.x == -20);
       assert(vect5.y == 12);
+
+      // Test rand Constructor
+      vector2 vect6 = vector2("rand",5,12);
+      assert(vect6.x >= 5);
+      assert(vect6.x < 12);
+      assert(vect6.y >= 5);
+      assert(vect6.y < 12);
     }
 
     // Test set functions
@@ -186,6 +199,15 @@ void testVectors() {
       assert(vect5.x == -20);
       assert(vect5.y == 12);
       assert(vect5.z == 15);
+
+      // Test rand Constructor
+      vector3 vect6 = vector3("rand",5,12);
+      assert(vect6.x >= 5);
+      assert(vect6.x < 12);
+      assert(vect6.y >= 5);
+      assert(vect6.y < 12);
+      assert(vect6.z >= 5);
+      assert(vect6.z < 12);
     }
 
     // Test set functions
@@ -326,5 +348,40 @@ void testVectors() {
       assert(vect3 == vect2);
       assert(vect1.string() == "x3.000000y4.000000z8.000000");
     }
+  }
+}
+
+void testSpaceObj() {
+  cout << "Testing SpaceObj" << endl;
+  // Testing Constructors
+  {
+    SpaceObj obj1;
+    assert(obj1.mass == 1);
+    assert(obj1.pos == DIMVECT());
+    assert(obj1.vel == DIMVECT());
+
+    SpaceObj obj2(5,DIMVECT(4),DIMVECT(1));
+    assert(obj2.mass == 5);
+    assert(obj2.pos == DIMVECT(4));
+    assert(obj2.vel == DIMVECT(1));
+
+    SpaceObj obj3 = obj2;
+    assert(obj3.mass == 5);
+    assert(obj3.pos == DIMVECT(4));
+    assert(obj3.vel == DIMVECT(1));
+
+    obj1 = obj3;
+    assert(obj1.mass == 5);
+    assert(obj1.pos == DIMVECT(4));
+    assert(obj1.vel == DIMVECT(1));
+  }
+  // Testing Other functions
+  {
+    SpaceObj obj1;
+    SpaceObj obj2;
+    assert(obj1 != obj2);
+    assert(!(obj1 == obj2));
+    assert(obj1 == obj1);
+    assert(!(obj1 != obj1));
   }
 }
