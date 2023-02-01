@@ -5,5 +5,8 @@ For performance, computation is planned to take place in cpp and saved in a txt 
 
 First goal: save a multitude of gravitational objects
 
+Log:
+Created vector objects for both 2D and 3D vectors and populated with operator functions
+
 Notes to self:
 Compile command: g++ -o ./main ./main.cpp
