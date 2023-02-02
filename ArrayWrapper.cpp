@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 
 double doubleRand(double min = 0, double max = 1) {
   // std::cout << (double(std::rand()) / (double(RAND_MAX) + 1.0))  * (max-min)<< std::endl;
@@ -22,6 +23,7 @@ public:
   ~ArrayWrapper();
 
   void print();
+  void sprint(std::ostream &stream);
 
 };
 
@@ -31,6 +33,7 @@ ArrayWrapper::ArrayWrapper() {
 }
 ArrayWrapper::ArrayWrapper(int length, double initVal = 0) {
   this->length = length;
+  if (this->length <= 0) { this->array = NULL; return;}
   this->array = new double[length];
   for (size_t i = 0; i < length; i++) {
     this->array[i] = initVal;
@@ -38,6 +41,7 @@ ArrayWrapper::ArrayWrapper(int length, double initVal = 0) {
 }
 ArrayWrapper::ArrayWrapper(int length, double min, double max) {
   this->length = length;
+  if (this->length <= 0) { this->array = NULL; return;}
   this->array = new double[length];
   for (size_t i = 0; i < length; i++) {
     this->array[i] = doubleRand(min,max);
@@ -45,6 +49,7 @@ ArrayWrapper::ArrayWrapper(int length, double min, double max) {
 }
 ArrayWrapper::ArrayWrapper(ArrayWrapper const &oth) {
   this->length = oth.length;
+  if (this->length <= 0) { this->array = NULL; return;}
   this->array = new double[this->length];
   for (size_t ind = 0; ind < this->length; ind++) {
     this->array[ind] = oth.array[ind];
@@ -53,12 +58,13 @@ ArrayWrapper::ArrayWrapper(ArrayWrapper const &oth) {
 void ArrayWrapper::operator=(ArrayWrapper const &oth) {
   delete[] this->array;
   this->length = oth.length;
+  if (this->length == 0) { this->array = NULL; return;}
   this->array = new double[this->length];
   for (size_t ind = 0; ind < this->length; ind++) {
     this->array[ind] = oth.array[ind];
   }
 }
-ArrayWrapper::~ArrayWrapper(){
+ArrayWrapper::~ArrayWrapper() {
   delete[] array;
 }
 
@@ -68,6 +74,13 @@ void ArrayWrapper::print() {
     std::cout << std::setprecision(3) << std::setw(7) << this->array[ind];
   }
   std::cout << std::endl;
+}
+
+void ArrayWrapper::sprint(std::ostream &stream) {
+  for (size_t ind = 0; ind < this->length-1; ind++) {
+    stream << this->array[ind] << ",";
+  }
+  if (this->length > 0) { stream << this->array[this->length-1]; }
 }
 
 #endif

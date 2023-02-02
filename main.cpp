@@ -22,4 +22,6 @@ int main() {
 
   objs.print();
 
+  objs.sprint(std::cout);
+
 }
