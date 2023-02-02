@@ -3,76 +3,58 @@
 
 #include <iostream>
 #include "ArrayWrapper.cpp"
+#include "SpaceVectors.cpp"
+
 
 class SpaceObjs {
 private:
-  int dims;
-  int numObjs;
+  int length;
 public:
   double time;
   ArrayWrapper mass;
-  ArrayWrapper posx;
-  ArrayWrapper posy;
-  ArrayWrapper posz;
-  ArrayWrapper velx;
-  ArrayWrapper vely;
-  ArrayWrapper velz;
+  SpaceVectors pos;
+  SpaceVectors vel;
 
   SpaceObjs(int, int);
 
-  void print();
-  void sprint(std::ostream &);
+  int len() const ;
+  void print() const ;
+  void sprint(std::ostream &) const ;
 };
 
-SpaceObjs::SpaceObjs(int dims, int numObjs) {
+SpaceObjs::SpaceObjs(int dims, int length) : time(0){
   this->time = 0;
-  if (dims != 3) { this->dims = 2; }
-  else { this->dims = 3; }
-  if (numObjs < 1) { this->numObjs = 0; }
-  else { this->numObjs = numObjs; }
-  this->mass = ArrayWrapper(this->numObjs,1);
-  this->posx = ArrayWrapper(this->numObjs,-1,1);
-  this->posy = ArrayWrapper(this->numObjs,-1,1);
-  this->velx = ArrayWrapper(this->numObjs,0);
-  this->vely = ArrayWrapper(this->numObjs,0);
-  if (this->dims == 3){
-    this->posz = ArrayWrapper(this->numObjs,-1,1);
-    this->velz = ArrayWrapper(this->numObjs,0);
-  }
+  if (length < 1) { this->length = 0; }
+  else { this->length = length; }
+  this->mass = ArrayWrapper(this->length,1);
+  this->pos = SpaceVectors(dims,length);
+  this->vel = SpaceVectors(dims,length);
 }
 
-void SpaceObjs::print() {
-  std::cout << "SpaceObjs: time " << this->time << " dims "<< this->dims << " num " << this->numObjs << std::endl;
+int SpaceObjs::len() const {
+  return this->length;
+}
+
+void SpaceObjs::print() const {
+  std::cout << "SpaceObjs: time " << this->time << " num " << this->length << std::endl;
   this->mass.print();
-  this->posx.print();
-  this->posy.print();
-  if (this->dims == 3) { this->posz.print(); }
-  this->velx.print();
-  this->vely.print();
-  if (this->dims == 3) { this->velz.print(); }
+  this->pos.print();
+  this->vel.print();
 }
 
-void SpaceObjs::sprint(std::ostream &stream) {
-  stream << "SpaceObjs:t" <<this->time << "d"<< this->dims << "n" << this->numObjs << "m";
+void SpaceObjs::sprint(std::ostream &stream) const {
+  stream << "SpaceObjs:t" <<this->time << "n" << this->length << "m";
   this->mass.sprint(stream);
   stream << "x";
-  this->posx.sprint(stream);
+  this->pos.sprint(stream);
   stream << "y";
-  this->posy.sprint(stream);
-  if (dims == 3 ) {
-    stream << "z";
-    this->posz.sprint(stream);
-  }
-  stream << "vx";
-  this->velx.sprint(stream);
-  stream << "vy";
-  this->vely.sprint(stream);
-  if (dims == 3) {
-    stream << "vz";
-    this->velz.sprint(stream);
-  }
+  this->vel.sprint(stream);
   stream << std::endl;
 
 }
+
+
+
+
 
 #endif

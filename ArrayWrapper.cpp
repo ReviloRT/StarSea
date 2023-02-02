@@ -11,8 +11,9 @@ double doubleRand(double min = 0, double max = 1) {
 }
 
 class ArrayWrapper {
-public:
+private:
   int length;
+public:
   double *array;
 
   ArrayWrapper();
@@ -22,8 +23,10 @@ public:
   void operator=(ArrayWrapper const &);
   ~ArrayWrapper();
 
-  void print();
-  void sprint(std::ostream &stream);
+  void rand(double,double);
+  int len() const;
+  void print() const ;
+  void sprint(std::ostream &stream) const ;
 
 };
 
@@ -48,7 +51,7 @@ ArrayWrapper::ArrayWrapper(int length, double min, double max) {
   }
 }
 ArrayWrapper::ArrayWrapper(ArrayWrapper const &oth) {
-  this->length = oth.length;
+  this->length = oth.len();
   if (this->length <= 0) { this->array = NULL; return;}
   this->array = new double[this->length];
   for (size_t ind = 0; ind < this->length; ind++) {
@@ -57,7 +60,7 @@ ArrayWrapper::ArrayWrapper(ArrayWrapper const &oth) {
 }
 void ArrayWrapper::operator=(ArrayWrapper const &oth) {
   delete[] this->array;
-  this->length = oth.length;
+  this->length = oth.len();
   if (this->length == 0) { this->array = NULL; return;}
   this->array = new double[this->length];
   for (size_t ind = 0; ind < this->length; ind++) {
@@ -68,7 +71,17 @@ ArrayWrapper::~ArrayWrapper() {
   delete[] array;
 }
 
-void ArrayWrapper::print() {
+void ArrayWrapper::rand(double min, double max) {
+  for (size_t ind = 0; ind < this->length; ind++) {
+    this->array[ind] = doubleRand(min,max);
+  }
+}
+
+int ArrayWrapper::len() const {
+  return this->length;
+}
+
+void ArrayWrapper::print() const {
   std::cout.setf(std::ios::right);
   for (size_t ind = 0; ind < this->length; ind++) {
     std::cout << std::setprecision(3) << std::setw(7) << this->array[ind];
@@ -76,7 +89,7 @@ void ArrayWrapper::print() {
   std::cout << std::endl;
 }
 
-void ArrayWrapper::sprint(std::ostream &stream) {
+void ArrayWrapper::sprint(std::ostream &stream) const {
   for (size_t ind = 0; ind < this->length; ind++) {
     stream << this->array[ind] << ",";
   }

@@ -7,11 +7,10 @@
 #include <iostream>
 #include <fstream>
 
-
 #include "SpaceObjs.cpp"
+#include "ForceSolver.cpp"
 
 void clearFile();
-
 
 int main() {
   std::cout << "StarSea v" << STARSEA_VERSION << std::endl;
