@@ -5,9 +5,11 @@
 #include "ArrayWrapper.cpp"
 
 class SpaceObjs {
-public:
+private:
   int dims;
   int numObjs;
+public:
+  double time;
   ArrayWrapper mass;
   ArrayWrapper posx;
   ArrayWrapper posy;
@@ -23,6 +25,7 @@ public:
 };
 
 SpaceObjs::SpaceObjs(int dims, int numObjs) {
+  this->time = 0;
   if (dims != 3) { this->dims = 2; }
   else { this->dims = 3; }
   if (numObjs < 1) { this->numObjs = 0; }
@@ -39,7 +42,7 @@ SpaceObjs::SpaceObjs(int dims, int numObjs) {
 }
 
 void SpaceObjs::print() {
-  std::cout << "SpaceObjs: dims "<< this->dims << " num " << this->numObjs << std::endl;
+  std::cout << "SpaceObjs: time " << this->time << " dims "<< this->dims << " num " << this->numObjs << std::endl;
   this->mass.print();
   this->posx.print();
   this->posy.print();
@@ -50,7 +53,7 @@ void SpaceObjs::print() {
 }
 
 void SpaceObjs::sprint(std::ostream &stream) {
-  stream << "SpaceObjs:d"<< this->dims << "n" << this->numObjs << "m";
+  stream << "SpaceObjs:t" <<this->time << "d"<< this->dims << "n" << this->numObjs << "m";
   this->mass.sprint(stream);
   stream << "x";
   this->posx.sprint(stream);

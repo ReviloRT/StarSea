@@ -77,10 +77,9 @@ void ArrayWrapper::print() {
 }
 
 void ArrayWrapper::sprint(std::ostream &stream) {
-  for (size_t ind = 0; ind < this->length-1; ind++) {
+  for (size_t ind = 0; ind < this->length; ind++) {
     stream << this->array[ind] << ",";
   }
-  if (this->length > 0) { stream << this->array[this->length-1]; }
 }
 
 #endif

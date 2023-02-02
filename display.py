@@ -3,20 +3,6 @@ import numpy
 
 fig = plt.figure()
 
-dim = 0;
-
-def parseVect(vect):
-    if dim == 2:
-        return parseVect2(vect)
-    if dim == 3:
-        return parseVect3(vect)
-
-def parseVect2(vect):
-    return [float(vect[1:vect.find("y")]),float(vect[vect.find("y")+1:])]
-
-def parseVect3(vect):
-    return [float(vect[1:vect.find("y")]),float(vect[vect.find("y")+1:vect.find("z")]),float(vect[vect.find("z")+1:])]
-
 def readTo(file,endChar) :
     str = ""
     while True:
@@ -27,36 +13,59 @@ def readTo(file,endChar) :
     return str
 
 with open("stars.txt", "r") as file:
-    dim = int(file.read(1))
+    while file.read(1) != '': #S or '' (end line)
 
-    while True:
-        if file.read(1) == '':
-            break;
+        #paceObjs:t(time)d(dim)n(count)m(mass1),(mass2),...,x(x1),(x2),...,y
 
-        file.read(1)
-        time = float(readTo(file,"O"))
+        readTo(file,"t") #paceObjs:t
+        time = float(readTo(file,"d")) #(time)d
+        dim = int(readTo(file,"n")) #(dim)n
+        count = int(readTo(file,"m")) #(count)m
         print(time)
+        array = numpy.zeros([dim*2+1,count])
+        # mass
+        for i in range(count):
+            array[0,i] = float(readTo(file,","))
+        file.read(1) # x
+        # posx
+        for i in range(count):
+            array[1,i] = float(readTo(file,","))
+        file.read(1) # y
+        # posy
+        for i in range(count):
+            array[2,i] = float(readTo(file,","))
+        if dim == 3 :
+            file.read(1) # z
+        else:
+            file.read(2) # vx
+        # velx or posz
+        for i in range(count):
+            array[3,i] = float(readTo(file,","))
+        file.read(2) # vy or vx
+        #vely or velx
+        for i in range(count):
+            array[4,i] = float(readTo(file,","))
 
-        array = numpy.zeros([2,dim*2+1])
-
-        file.read(1)
-        array[0,0] = float(readTo(file,"p"))
-        array[0,1:dim+1] = parseVect(readTo(file,"v"))
-        array[0,dim+1:2*dim+1] = parseVect(readTo(file,"O"))
-        file.read(1)
-        array[1,0] = float(readTo(file,"p"))
-        array[1,1:dim+1] = parseVect(readTo(file,"v"))
-        array[1,dim+1:2*dim+1] = parseVect(readTo(file,"\n"))
+        if dim == 3 :
+            file.read(2) # vy
+            # vely
+            for i in range(count):
+                array[5,i] = float(readTo(file,","))
+            file.read(2) # vz
+            # velz
+            for i in range(count):
+                array[6,i] = float(readTo(file,","))
+        file.read(1) # \n
 
         fig.clear()
         if dim == 2:
             ax = plt.axes()
             ax.set(xlim=[-1,1],ylim=[-1,1])
-            ax.scatter(array[:,1],array[:,2])
+            ax.scatter(array[1,:],array[2,:])
         else:
             ax = plt.axes(projection="3d")
             ax.set(xlim=[-1,1],ylim=[-1,1],zlim=[-1,1])
-            ax.scatter3D(array[:,1],array[:,2],array[:,3])
+            ax.scatter3D(array[1,:],array[2,:],array[3,:])
 
         plt.pause(0.00001)
 

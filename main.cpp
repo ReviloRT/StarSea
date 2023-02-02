@@ -10,6 +10,8 @@
 
 #include "SpaceObjs.cpp"
 
+void clearFile();
+
 
 int main() {
   std::cout << "StarSea v" << STARSEA_VERSION << std::endl;
@@ -22,6 +24,22 @@ int main() {
 
   objs.print();
 
-  objs.sprint(std::cout);
+  clearFile();
 
+  std::fstream file;
+  file.open(SAVEFILE,std::ios::app);
+  objs.sprint(file);
+  file.close();
+
+  file.open(SAVEFILE,std::ios::app);
+  objs.sprint(file);
+  file.close();
+
+
+}
+
+void clearFile() {
+  std::fstream file;
+  file.open(SAVEFILE,std::ios::out | std::ios::trunc);
+  file.close();
 }
