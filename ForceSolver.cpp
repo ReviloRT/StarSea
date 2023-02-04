@@ -6,20 +6,38 @@
 
 class ForceSolver {
 public:
+  int method;
   double bigG;
-
   ForceSolver();
-  SpaceVectors solveForcesDirect(SpaceObjs &);
-  void solveForcesDirect2D(SpaceVectors&, SpaceObjs &);
-  void solveForcesDirect3D(SpaceVectors&, SpaceObjs &);
+  SpaceVectors solve(SpaceObjs const &);
+  SpaceVectors solveForcesDirect(SpaceObjs const &);
+  void solveForcesDirect2D(SpaceVectors&, SpaceObjs const &);
+  void solveForcesDirect3D(SpaceVectors&, SpaceObjs const &);
 
 };
 
 ForceSolver::ForceSolver() {
   this->bigG = 1;
+  this->method = 0;
 }
 
-void ForceSolver::solveForcesDirect2D(SpaceVectors& forces, SpaceObjs &objs) {
+SpaceVectors ForceSolver::solve(SpaceObjs const &objs) {
+  if (this->method == 1) {
+    return this->solveForcesDirect(objs);
+  } else {
+    return this->solveForcesDirect(objs);
+  }
+}
+
+SpaceVectors ForceSolver::solveForcesDirect(SpaceObjs const &objs) {
+  bool is3D = (objs.pos.getDims() == 3);
+  SpaceVectors forces(2+is3D,objs.len(),0);
+  if (is3D) {this->solveForcesDirect3D(forces,objs);}
+  else {this->solveForcesDirect2D(forces,objs);}
+  return forces;
+}
+
+void ForceSolver::solveForcesDirect2D(SpaceVectors& forces, SpaceObjs const &objs) {
   for (size_t ind1 = 0; ind1 < objs.len(); ind1++) {
     for (size_t ind2 = 0; ind2 < objs.len(); ind2++) {
       if (ind1 == ind2) { continue;}
@@ -34,7 +52,7 @@ void ForceSolver::solveForcesDirect2D(SpaceVectors& forces, SpaceObjs &objs) {
   }
 }
 
-void ForceSolver::solveForcesDirect3D(SpaceVectors& forces, SpaceObjs &objs) {
+void ForceSolver::solveForcesDirect3D(SpaceVectors& forces, SpaceObjs const &objs) {
   for (size_t ind1 = 0; ind1 < objs.len(); ind1++) {
     for (size_t ind2 = 0; ind2 < objs.len(); ind2++) {
       if (ind1 == ind2) { continue;}
@@ -51,13 +69,7 @@ void ForceSolver::solveForcesDirect3D(SpaceVectors& forces, SpaceObjs &objs) {
   }
 }
 
-SpaceVectors ForceSolver::solveForcesDirect(SpaceObjs &objs) {
-  bool is3D = (objs.pos.getDims() == 3);
-  SpaceVectors forces(2+is3D,objs.len(),0);
-  if (is3D) {this->solveForcesDirect3D(forces,objs);}
-  else {this->solveForcesDirect2D(forces,objs);}
-  return forces;
-}
+
 
 
 #endif

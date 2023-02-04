@@ -14,19 +14,21 @@ def readTo(file,endChar) :
 
 with open("stars.txt", "r") as file:
     while file.read(1) != '': #S or '' (end line)
-
+        # print(readTo(file,"\n"))
+        # quit()
         #paceObjs:t(time)d(dim)n(count)m(mass1),(mass2),...,x(x1),(x2),...,y
 
         readTo(file,"t") #paceObjs:t
-        time = float(readTo(file,"d")) #(time)d
-        dim = int(readTo(file,"n")) #(dim)n
+        time = float(readTo(file,"n")) #(time)d
         count = int(readTo(file,"m")) #(count)m
-        print(time)
-        array = numpy.zeros([dim*2+1,count])
+        print(time,count)
+        array = numpy.zeros([7,count])
         # mass
         for i in range(count):
             array[0,i] = float(readTo(file,","))
-        file.read(1) # x
+        file.read(2) # x
+        dim = int(readTo(file,"n"))
+        readTo(file,"x")
         # posx
         for i in range(count):
             array[1,i] = float(readTo(file,","))
@@ -37,21 +39,25 @@ with open("stars.txt", "r") as file:
         if dim == 3 :
             file.read(1) # z
         else:
-            file.read(2) # vx
+            readTo(file,"x") # vx
         # velx or posz
         for i in range(count):
             array[3,i] = float(readTo(file,","))
-        file.read(2) # vy or vx
+        if dim == 3 :
+            readTo(file,"x") # vx
+        else:
+            file.read(1) # y
+
         #vely or velx
         for i in range(count):
             array[4,i] = float(readTo(file,","))
 
         if dim == 3 :
-            file.read(2) # vy
+            file.read(1) # y
             # vely
             for i in range(count):
                 array[5,i] = float(readTo(file,","))
-            file.read(2) # vz
+            file.read(1) # vz
             # velz
             for i in range(count):
                 array[6,i] = float(readTo(file,","))
