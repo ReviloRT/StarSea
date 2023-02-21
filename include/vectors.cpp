@@ -6,219 +6,15 @@
 #include <iostream>
 #include <cstdlib>
 
+namespace vect {
+  
+enum VectInitFlag {SET, FILL, FILL2D, RAND, RAND2D, ZERO};
 
 double doubleRand(double min = 0, double max = 1) {
   // std::cout << (double(std::rand()) / (double(RAND_MAX) + 1.0))  * (max-min)<< std::endl;
   return (double(std::rand()) / (double(RAND_MAX) + 1.0)) * (max-min) + min;
 
 }
-
-class vector2 {
-public:
-  double x;
-  double y;
-
-  // Init Functions
-  vector2();
-  vector2(double);
-  vector2(double,double);
-  vector2(vector2 const &);
-  vector2(std::string, double, double);
-  ~vector2();
-
-  // Set functions
-  void zero();
-  void fill(double);
-  void set(double, double);
-  void rand(double, double);
-
-  // Boolean Operators
-  bool operator==(vector2 const &);
-  bool operator!=(vector2 const &);
-
-  // Basic arithmatic functions with other vectors
-  vector2 operator+(vector2 const &);
-  vector2 operator-(vector2 const &);
-  vector2 operator*(vector2 const &);
-  vector2 operator/(vector2 const &);
-
-  // Basic arithmatic functions with constants
-  vector2 operator+(double);
-  vector2 operator-(double);
-  vector2 operator*(double);
-  vector2 operator/(double);
-
-  // self arithmatic functions with vectors
-  void operator=(vector2 const &);
-  void operator+=(vector2 const &);
-  void operator-=(vector2 const &);
-  void operator*=(vector2 const &);
-  void operator/=(vector2 const &);
-
-  // self arithmatic functions with constants
-  void operator=(double);
-  void operator+=(double);
-  void operator-=(double);
-  void operator*=(double);
-  void operator/=(double);
-
-  // special functions
-  double mag();
-  double sqmag();
-  vector2 unit();
-  double max();
-  double min();
-  double dot(vector2 const &);
-  double cross(vector2 const &);
-
-  // Display functions
-  void print();
-  std::string string();
-
-};
-
-vector2::vector2() {
-  this->x = 0;
-  this->y = 0;
-}
-vector2::vector2(double a) {
-  this->x = a;
-  this->y = a;
-}
-vector2::vector2(double x, double y) {
-  this->x = x;
-  this->y = y;
-}
-vector2::vector2(std::string rand, double min, double max) {
-  this->rand(min,max);
-}
-vector2::vector2(vector2 const &obj) {
-  this->x = obj.x;
-  this->y = obj.y;
-}
-vector2::~vector2(){}
-
-void vector2::zero() {
-  this->x = 0;
-  this->y = 0;
-}
-void vector2::fill(double a) {
-  this->x = a;
-  this->y = a;
-}
-void vector2::set(double x, double y) {
-  this->x = x;
-  this->y = y;
-}
-void vector2::rand(double min = 0, double max = 1) {
-  this->x = doubleRand(min,max);
-  this->y = doubleRand(min,max);
-}
-
-bool vector2::operator==(vector2 const &obj) {
-  return ((this->x == obj.x) && (this->y == obj.y));
-}
-bool vector2::operator!=(vector2 const &obj) {
-  return ((this->x != obj.x) || (this->y != obj.y));
-}
-
-vector2 vector2::operator+(vector2 const &obj) {
-  return vector2(this->x + obj.x, this->y + obj.y);
-}
-vector2 vector2::operator-(vector2 const &obj) {
-  return vector2(this->x - obj.x, this->y - obj.y);
-}
-vector2 vector2::operator*(vector2 const &obj) {
-  return vector2(this->x * obj.x, this->y * obj.y);
-}
-vector2 vector2::operator/(vector2 const &obj) {
-  return vector2(this->x / obj.x, this->y / obj.y);
-}
-
-vector2 vector2::operator+(double a) {
-  return vector2(this->x + a, this->y + a);
-}
-vector2 vector2::operator-(double a) {
-  return vector2(this->x - a, this->y - a);
-}
-vector2 vector2::operator*(double a) {
-  return vector2(this->x * a, this->y * a);
-}
-vector2 vector2::operator/(double a) {
-  return vector2(this->x / a, this->y / a);
-}
-
-void vector2::operator=(vector2 const &obj) {
-  this->x = obj.x;
-  this->y = obj.y;
-}
-void vector2::operator+=(vector2 const &obj) {
-  this->x += obj.x;
-  this->y += obj.y;
-}
-void vector2::operator-=(vector2 const &obj) {
-  this->x -= obj.x;
-  this->y -= obj.y;
-}
-void vector2::operator*=(vector2 const &obj) {
-  this->x *= obj.x;
-  this->y *= obj.y;
-}
-void vector2::operator/=(vector2 const &obj) {
-  this->x /= obj.x;
-  this->y /= obj.y;
-}
-
-void vector2::operator=(double a) {
-  this->x = a;
-  this->y = a;
-}
-void vector2::operator+=(double a) {
-  this->x += a;
-  this->y += a;
-}
-void vector2::operator-=(double a) {
-  this->x -= a;
-  this->y -= a;
-}
-void vector2::operator*=(double a) {
-  this->x *= a;
-  this->y *= a;
-}
-void vector2::operator/=(double a) {
-  this->x /= a;
-  this->y /= a;
-}
-
-double vector2::mag() {
-  return std::sqrt(this->x*this->x + this->y*this->y);
-}
-double vector2::sqmag() {
-  return this->x*this->x + this->y*this->y;
-}
-vector2 vector2::unit() {
-  return *this/this->mag();
-}
-double vector2::max(){
-  return std::max(this->x,this->y);
-}
-double vector2::min(){
-  return std::min(this->x,this->y);
-}
-double vector2::dot(vector2 const &obj) {
-  return this->x * obj.x + this->y * obj.y;
-}
-double vector2::cross(vector2 const &obj) {
-  return this->x * obj.y - this->y* obj.x;
-}
-
-void vector2::print() {
-  std::cout << "x" << this->x << " y" << this->y;
-}
-std::string vector2::string() {
-  return "x" + std::to_string(this->x) + "y" + std::to_string(this->y);
-}
-
 
 class vector3 {
 public:
@@ -231,14 +27,16 @@ public:
   vector3(double);
   vector3(double,double,double);
   vector3(vector3 const &);
-  vector3(std::string, double, double);
+  vector3(VectInitFlag , double, double, double);
   ~vector3();
 
   // Set functions
   void zero();
   void fill(double);
+  void fill2D(double);
   void set(double, double, double);
   void rand(double, double);
+  void rand2D(double, double);
 
   // Boolean Operators
   bool operator==(vector3 const &);
@@ -273,11 +71,16 @@ public:
   // Special functions
   double mag();
   double sqmag();
+  vector3 squared();
   vector3 unit();
   double max();
   double min();
   double dot(vector3 const &);
   vector3 cross(vector3 const &);
+  vector3 greaterThan(vector3 const &obj);
+  vector3 lessThan(vector3 const &obj);
+  bool any();
+  bool all();
 
   void print();
   std::string string();
@@ -304,8 +107,16 @@ vector3::vector3(vector3 const &obj) {
   this->y = obj.y;
   this->z = obj.z;
 }
-vector3::vector3(std::string rand, double min, double max) {
-  this->rand(min,max);
+vector3::vector3(VectInitFlag flag, double a = 0, double b = 0, double c = 0) {
+  switch(flag) {
+    case SET : this->set(a,b,c); break;
+    case FILL : this->fill(a); break;
+    case FILL2D : this->fill2D(a); break;
+    case RAND : this->rand(a,b); break;
+    case RAND2D : this->rand2D(a,b); break;
+    case ZERO : this->zero(); break;
+    default : this->zero(); break;
+  }
 }
 vector3::~vector3(){}
 
@@ -319,6 +130,11 @@ void vector3::fill(double a){
   this->y = a;
   this->z = a;
 }
+void vector3::fill2D(double a){
+  this->x = a;
+  this->y = a;
+  this->z = 0;
+}
 void vector3::set(double x, double y, double z){
   this->x = x;
   this->y = y;
@@ -328,6 +144,11 @@ void vector3::rand(double min = 0, double max = 1){
   this->x = doubleRand(min, max);
   this->y = doubleRand(min, max);
   this->z = doubleRand(min, max);
+}
+void vector3::rand2D(double min = 0, double max = 1){
+  this->x = doubleRand(min, max);
+  this->y = doubleRand(min, max);
+  this->z = 0;
 }
 
 bool vector3::operator==(vector3 const &obj) {
@@ -421,6 +242,9 @@ double vector3::mag() {
 double vector3::sqmag() {
   return this->x*this->x + this->y*this->y + this->z*this->z;
 }
+vector3 vector3::squared() {
+  return vector3((this->x * this->x),(this->y * this->y),(this->z * this->z)) ; 
+}
 vector3 vector3::unit() {
   return *this/this->mag();
 }
@@ -436,14 +260,27 @@ double vector3::dot(vector3 const &obj){
 vector3 vector3::cross(vector3 const &obj){
   return vector3(this->y*obj.z-this->z*obj.y, this->z*obj.x-this->x*obj.z,this->x*obj.y-this->y*obj.x);
 }
-
+vector3 vector3::greaterThan(vector3 const &obj) {
+  return vector3((this->x>obj.x),(this->y>obj.y),(this->z>obj.z)) ; 
+}
+vector3 vector3::lessThan(vector3 const &obj) {
+  return vector3((this->x<obj.x),(this->y<obj.y),(this->z<obj.z)) ; 
+}
+bool vector3::any() {
+  return (this->x != 0) || (this->y != 0) || (this->z != 0);
+}
+bool vector3::all() {
+  return (this->x != 0) && (this->y != 0) && (this->z != 0);
+}
 
 std::string vector3::string() {
   return "x" + std::to_string(this->x) + "y" + std::to_string(this->y)+ "z" + std::to_string(this->z);
 }
 void vector3::print() {
-  std::cout << "x" << this->x << " y" << this->y << "z" << this->z;
+  std::cout << std::setprecision(20) << "x" << this->x << " y" << this->y << "z" << this->z;
 }
 
+}
 
 #endif
+

@@ -1,32 +1,31 @@
 #ifndef SPACEOBJ
 #define SPACEOBJ
 
-#ifndef DIMVECT
-#define DIMVECT vector2
-#endif
-
 #include <iostream>
 
 #include "vectors.cpp"
 
+using namespace vect;
+
 class SpaceObj {
 public:
   double mass;
-  DIMVECT pos;
-  DIMVECT vel;
+  vector3 pos;
+  vector3 vel;
 
-  SpaceObj(double = 1, DIMVECT = DIMVECT(), DIMVECT = DIMVECT());
+  SpaceObj(double = 1, vector3 = vector3(), vector3 = vector3());
   SpaceObj(SpaceObj const &);
   ~SpaceObj();
   void operator=(SpaceObj const &);
 
   bool operator==(SpaceObj const &);
   bool operator!=(SpaceObj const &);
+  
   void print();
   std::string string();
 };
 
-SpaceObj::SpaceObj(double mass, DIMVECT pos, DIMVECT vel){
+SpaceObj::SpaceObj(double mass, vector3 pos, vector3 vel){
   this->mass = mass;
   this->pos = pos;
   this->vel = vel;

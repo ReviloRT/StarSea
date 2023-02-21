@@ -1,82 +1,58 @@
 
 #define STARSEA_VERSION 1.0
 
-// #define DIM2D
-#define DIM3D
 #define SAVEFILE "stars.txt"
-
-
-#ifdef DIM3D
-#define DIMVECT vector3
-#endif
-#ifdef DIM2D
-#define DIMVECT vector2
-#endif
 
 #include <iostream>
 #include <fstream>
 
-#include "vectors.cpp"
-#include "SpaceObj.cpp"
-
-void clearFile();
-void save(double, SpaceObj, SpaceObj);
+#include "include/vectors.cpp"
+#include "include/SpaceObj.cpp"
+#include "include/SpaceTime.cpp"
+#include "include/StandardSolving.cpp"
+#include "include/SpaceTreeSolving.cpp"
+#include "include/RungeKuttaSolvers.cpp"
 
 int main() {
 
   std::cout << "StarSea v" << STARSEA_VERSION << std::endl;
-  // Initalise two objects
-  std::srand(0);
-  SpaceObj obj1(1,DIMVECT("rand",-1,1),DIMVECT("rand",-0.1,0.1));
-  SpaceObj obj2(1,DIMVECT("rand",-1,1),DIMVECT("rand",-0.1,0.1));
-
-  double time = 0;
-  double dt = 0.1;
-  double bigG = 1;
-
-  obj1.print();
-  obj2.print();
-
-  clearFile();
-  save(time,obj1,obj2);
-
-  for (size_t step = 0; step < 100; step++) {
-    // Calculate forces
-    double dist = (obj1.pos-obj2.pos).mag();
-    double force = bigG*obj1.mass * obj2.mass/(dist*dist);
-    DIMVECT forceVect = (obj1.pos-obj2.pos).unit() * force;
-
-    // Integration step with euler
-    obj1.vel -= forceVect/obj1.mass * dt;
-    obj2.vel += forceVect/obj2.mass * dt;
-    obj1.pos += obj1.vel * dt;
-    obj2.pos += obj2.vel * dt;
-
-    time += dt;
-
-    obj1.print();
-    obj2.print();
-    save(time,obj1,obj2);
+  std::srand(1);
+    
+  
+  SSolve::SystemParameters params;
+  params.dt = 0.0001;
+  params.endTime = 10;
+  params.savePeriod = 0.1;
+  params.bigG = 0.0001;
+  params.displayDims = 3;
+  
+  params.sigma = 0.005;
+  // params.forceFunc = SSolve::solveForcesDirect;
+  params.forceFunc = solveForcesGridTree;
+  
+  
+  params.errorTollerance = 0.00000000001;
+  // params.butcherTab = &RK::RKF45_BT[0][0];
+  // params.butcherSize = RK::RKF45_BTSize;
+  // params.stepFunc = RK::solveRKEmbeddedStep;
+  params.stepFunc = RK::solveRKN76Step;
+  
+  int objCount = 100;
+  SpaceObj *state = new SpaceObj[objCount];
+  for (size_t ind1 = 0; ind1 < objCount; ind1++){
+    state[ind1] = SpaceObj(1,vect::vector3(vect::RAND,-0.5,0.5),vect::vector3(vect::RAND,-0.03,0.03));
+    // state[ind1].pos.z = 0;
+    // state[ind1].vel.z = 0;
   }
+  SpaceTime spaceTime(state,objCount);
+  
+  spaceTime.clearFile(params.displayDims);
+  spaceTime.save();
+  
+  
+  double dp = SSolve::solveSystem(params, spaceTime);
+  std::cout << std::endl << "Momentum Change: " << std::setprecision(20) << std::setw(20) << dp << std::endl;
 
+  
 }
 
-void save(double time, SpaceObj obj1, SpaceObj obj2) {
-  std::fstream file;
-  file.open(SAVEFILE,std::ios::app);
-  file << "t=" << time << obj1.string() << obj2.string();
-  file << std::endl;
-  file.close();
-}
-
-void clearFile() {
-  std::fstream file;
-  file.open(SAVEFILE,std::ios::out | std::ios::trunc);
-  #ifdef DIM2D
-  file << 2;
-  #endif
-  #ifdef DIM3D
-  file << 3;
-  #endif
-  file.close();
-}

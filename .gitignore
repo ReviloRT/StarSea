@@ -1,0 +1,8 @@
+main
+prof.out
+stars.txt
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
+main.dSYM/Contents/Info.plist
+.DS_Store
