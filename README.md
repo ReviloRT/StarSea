@@ -11,3 +11,7 @@ Created vector objects for both 2D and 3D vectors and populated with operator fu
 Notes to self:
 Compile command: g++ -o ./main ./main.cpp
 Compile command: g++ -o ./test ./test.cpp
+
+Profiler compile command $ g++ -o ./main ./main.cpp -lprofiler -ltcmalloc -ggdb3 -Wall
+Profiler run command $ env CPUPROFILE=/tmp/prof.out ./main                
+Profiler show command $ ~/go/bin/pprof --web ./main /tmp/prof.out

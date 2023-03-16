@@ -20,7 +20,7 @@ public:
 
   bool operator==(SpaceObj const &);
   bool operator!=(SpaceObj const &);
-  
+
   void print();
   std::string string();
 };
@@ -55,7 +55,7 @@ void SpaceObj::print() {
   std::cout << this->string() << std::endl;
 }
 std::string SpaceObj::string() {
-  return "Om"+ std::to_string(this->mass) + "p" + this->pos.string() + "v"+ this->vel.string();
+  return "m"+ std::to_string(this->mass) + "p" + this->pos.string() + "v"+ this->vel.string();
 }
 
 

@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 namespace vect {
-  
+
 enum VectInitFlag {SET, FILL, FILL2D, RAND, RAND2D, ZERO};
 
 double doubleRand(double min = 0, double max = 1) {
@@ -243,7 +243,7 @@ double vector3::sqmag() {
   return this->x*this->x + this->y*this->y + this->z*this->z;
 }
 vector3 vector3::squared() {
-  return vector3((this->x * this->x),(this->y * this->y),(this->z * this->z)) ; 
+  return vector3((this->x * this->x),(this->y * this->y),(this->z * this->z)) ;
 }
 vector3 vector3::unit() {
   return *this/this->mag();
@@ -261,10 +261,10 @@ vector3 vector3::cross(vector3 const &obj){
   return vector3(this->y*obj.z-this->z*obj.y, this->z*obj.x-this->x*obj.z,this->x*obj.y-this->y*obj.x);
 }
 vector3 vector3::greaterThan(vector3 const &obj) {
-  return vector3((this->x>obj.x),(this->y>obj.y),(this->z>obj.z)) ; 
+  return vector3((this->x>obj.x),(this->y>obj.y),(this->z>obj.z)) ;
 }
 vector3 vector3::lessThan(vector3 const &obj) {
-  return vector3((this->x<obj.x),(this->y<obj.y),(this->z<obj.z)) ; 
+  return vector3((this->x<obj.x),(this->y<obj.y),(this->z<obj.z)) ;
 }
 bool vector3::any() {
   return (this->x != 0) || (this->y != 0) || (this->z != 0);
@@ -283,4 +283,3 @@ void vector3::print() {
 }
 
 #endif
-
