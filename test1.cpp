@@ -6,18 +6,52 @@
 
 #define SAVEFILE "stars.txt"
 
-const int maxObjCount = 2;
-const double bigG = -0.01;
-const int displayDims = 2;
-const double endTime = 24.1839915231*10;
-const double savePeriod = 24.1839915231/1000;
-const double errorTollerance = 0.00000001;
+// 24.1839915231
+const int maxObjCount = 100;
+const double bigG = -0.0001;
+const int displayDims = 3;
+const double endTime = 100;
+// const double endTime = 24.1839915231;
+const double savePeriod = 0.1;
+// const double savePeriod = 24.1839915231/100;
+const double errorTollerance = 0.0000001;
+const double treeSigma = 0.1;
+const double softeningConst = 10000000;
+const double minMergeDist = 0.00001;
 
-volatile int objCount = 2;
-volatile double dt = 24.1839915231/50;
-volatile double currTime = 0;
-volatile int stepCount = 0;
-volatile int saveCounter = 0;
+class TreeNode {
+public:
+  int index;
+  vect::vector3 lowBound;
+  vect::vector3 size;
+  vect::vector3 com;
+  double mass;
+  TreeNode *child[2][2][2];
+  bool isLeaf;
+
+  TreeNode(int newIndex,vect::vector3 lowBound, vect::vector3 size, vect::vector3 *positions);
+  // return the box a new object would fit into
+  int chooseBox(int newIndex, vect::vector3 *positions);
+  // return the new lob bounds for a given child index
+  vect::vector3 newBoxLowBounds(int boxIndex);
+  // add an object to the correct child (create child if needed)
+  void addObj(int newIndex, vect::vector3 *positions);
+  // Calculate the force acting on the given index
+  vect::vector3 calcForce(int targetIndex, vect::vector3 *positions);
+  // Update COMS for the given position list
+  vect::vector3 updateCOMS(vect::vector3 *positions);
+  // Remove this node and repair tree
+  // void popObj();
+  ~TreeNode();
+};
+
+int objCount = 100;
+double dt = 0.1;
+double currTime = 0;
+int stepCount = 0;
+int saveCounter = 0;
+TreeNode *root;
+
 
 const double SQRT21 = std::sqrt(21);
 vect::vector3 pos1[maxObjCount];
@@ -56,18 +90,115 @@ void init2BodyTestObjs() {
   vel1[1] = vect::vector3(0,-0.05,0);
 }
 
+vect::vector3 solveForce(vect::vector3 pos1, vect::vector3 pos2, double mass1, double mass2) {
+  vect::vector3 dif = (pos1-pos2);
+  double dist2 = dif.sqmag();
+  if (dist2 == 0) {dif.zero(); return dif;}
+  double fmag = (bigG * mass1 * mass2) / (dist2 * std::sqrt(dist2)) * (1-std::exp(-softeningConst*dist2));
+  return dif * fmag;
+}
+
 void solveAccelsDirect(vect::vector3 *accels, vect::vector3 *positions) {
+  // Clear accels array
+  for (size_t i = 0; i < objCount; i++) {
+    accels[i] = 0;
+  }
+  vect::vector3 force;
   // Solve Forces
   for (size_t i = 0; i < objCount; i++) {
     for (size_t j = i+1; j < objCount; j++) {
-      if (i == j) {continue;}
-      vect::vector3 dif = (positions[i]-positions[j]);
-      double dist2 = dif.sqmag();
-      if (dist2 == 0) {accels[i].zero(); accels[j].zero(); continue;}
-      double fmag = (bigG * masses[i]* masses[j] / (dist2 * std::sqrt(dist2)));
-      accels[i] = dif * ( fmag / masses[j]);
-      accels[j] = dif * (-fmag / masses[i]);
+      // if (i == j) {continue;}
+      // vect::vector3 dif = (positions[i]-positions[j]);
+      // double dist2 = dif.sqmag();
+      // if (dist2 == 0) {accels[i].zero(); accels[j].zero(); continue;}
+      // double fmag = (bigG * masses[i]* masses[j] / (dist2 * std::sqrt(dist2)));
+      // accels[i] += dif * ( fmag / masses[j]);
+      // accels[j] += dif * (-fmag / masses[i]);
+      force = solveForce(positions[i],positions[j],masses[i],masses[j]);
+      accels[i] += force*masses[j];
+      accels[j] += force*-masses[i];
     }
+  }
+}
+
+TreeNode::TreeNode(int newIndex,vect::vector3 lowBound, vect::vector3 size, vect::vector3 *positions) {
+  this->index = newIndex;
+  this->com = positions[newIndex];
+  this->mass = masses[newIndex];
+  this->isLeaf = true;
+  this->lowBound = lowBound;
+  this->size = size;
+  for (size_t i = 0; i < 8; i++) {
+    this->child[i%2][i/2%2][i/4] = NULL;
+  }
+}
+int TreeNode::chooseBox(int newIndex, vect::vector3 *positions) {
+  return ((positions[newIndex]-this->lowBound)/this->size*vect::vector3(1,2,4)).sum();
+}
+vect::vector3 TreeNode::newBoxLowBounds(int boxIndex) {
+  return this->lowBound + this->size * vect::vector3(boxIndex%2,boxIndex/2%2,boxIndex/4) /2;
+}
+void TreeNode::addObj(int newIndex, vect::vector3 *positions) {
+  int newBox = chooseBox(newIndex, positions);
+  if (child[newBox%2][newBox/2%2][newBox/4] == NULL) {
+    child[newBox%2][newBox/2%2][newBox/4] = new TreeNode(newIndex,newBoxLowBounds(newBox),this->size/2, positions);
+  } else {
+    child[newBox%2][newBox/2%2][newBox/4]->addObj(newIndex, positions);
+  }
+
+  this->isLeaf = false;
+  this->com = this->com/this->mass + positions[newIndex]*masses[newIndex];
+  this->mass += masses[newIndex];
+  this->com /= this->mass;
+}
+vect::vector3 TreeNode::calcForce(int targetIndex, vect::vector3 *positions) {
+  vect::vector3 retForce;
+  if (this->isLeaf) {
+    if (this->index != targetIndex) { retForce = solveForce(positions[targetIndex], positions[this->index], masses[targetIndex], masses[this->index])*masses[this->index]; }
+    return retForce;
+  }
+  if (this->index == targetIndex) {
+    for (size_t i = 0; i < 8; i++) {
+      if (this->child[i%2][i/2%2][i/4] == NULL) {continue;}
+      retForce += this->child[i%2][i/2%2][i/4]->calcForce(targetIndex, positions);
+    }
+  } else {
+    if ((this->size.sqmag()/(this->com-pos1[targetIndex]).sqmag()) < treeSigma*treeSigma) {
+      retForce = solveForce(positions[targetIndex], this->com, masses[targetIndex], this->mass)*this->mass;
+      // std::cout << "Skipped mass: " << this->mass << std::endl;
+    } else {
+      retForce = solveForce(positions[targetIndex], positions[this->index], masses[targetIndex], masses[this->index])*masses[this->index];
+      for (size_t i = 0; i < 8; i++) {
+        if (this->child[i%2][i/2%2][i/4] == NULL) {continue;}
+        retForce += this->child[i%2][i/2%2][i/4]->calcForce(targetIndex, positions);
+      }
+    }
+  }
+  return retForce;
+
+}
+vect::vector3 TreeNode::updateCOMS(vect::vector3 *positions) {
+  this->com = positions[this->index];
+  if (!this->isLeaf) {
+    for (size_t i = 0; i < 8; i++) {
+      if (this->child[i%2][i/2%2][i/4] == NULL) {continue;}
+      this->com += this->child[i%2][i/2%2][i/4]->updateCOMS(positions);
+    }
+  }
+  this->com /= this->mass;
+  return this->com;
+
+}
+TreeNode::~TreeNode() {
+  for (size_t i = 0; i < 8; i++) {
+    delete this->child[i%2][i/2%2][i/4];
+  }
+}
+
+void solveAccelsTree(vect::vector3 *accels, vect::vector3 *positions) {
+  root->updateCOMS(positions);
+  for (size_t i = 0; i < objCount; i++) {
+    accels[i] = root->calcForce(i, positions);
   }
 }
 
@@ -105,8 +236,6 @@ void solveRK4Integration(void (*accelFunc)(vect::vector3 *accels, vect::vector3 
     pos1[i] += velCalc[2][i] * (1/3.0 * dt) + velCalc[3][i] * (1/6.0 * dt);
     vel1[i] += accelCalc[0][i] * (1/6.0 * dt) + accelCalc[1][i] * (1/3.0 * dt);
     vel1[i] += accelCalc[2][i] * (1/3.0 * dt) + accelCalc[3][i] * (1/6.0 * dt);
-    // pos1[i] += accelCalc[0][i] * (1/6.0 * 1/6.0 * dt * dt) + accelCalc[1][i] * (1/3.0 * 1/3.0 * dt * dt);
-    // pos1[i] += accelCalc[2][i] * (1/3.0 * 1/3.0 * dt * dt) + accelCalc[3][i] * (1/6.0 * 1/6.0 * dt * dt);
   }
 
 
@@ -205,9 +334,9 @@ void solveRKN76Integration(void (*accelFunc)(vect::vector3 *accels, vect::vector
     }
     lastdt = dt;
     if (error != 0){
-      // dt *= 0.9*std::pow(errorTollerance/error,(1.0/6.0));
+      dt *= 0.9*std::pow(errorTollerance/error,(1.0/6.0));
     } else {
-      // dt *= 1.1;
+      dt *= 1.1;
     }
     // std::cout << "Step: " << error << " " << dt << " " << (error > errorTollerance) <<std::endl;
 
@@ -223,6 +352,22 @@ void solveRKN76Integration(void (*accelFunc)(vect::vector3 *accels, vect::vector
   // std::cout << "FinalStep: " << error << " " << dt << "\n" <<std::endl;
 }
 
+void solveMergesDirect() {
+  for (size_t i = 0; i < objCount; i++) {
+    for (size_t j = i+1; j < objCount; j++) {
+      if ((pos1[i]-pos1[j]).sqmag() < minMergeDist*minMergeDist) {
+        pos1[i] = (pos1[i]*masses[i] + pos1[j]*masses[j])/(masses[i] + masses[j]);
+        vel1[i] = (vel1[i]*masses[i] + vel1[j]*masses[j])/(masses[i] + masses[j]);
+        masses[i] = masses[i] + masses[j];
+        pos1[j] = pos1[objCount-1];
+        vel1[j] = vel1[objCount-1];
+        masses[j] = masses[objCount-1];
+        objCount --;
+      }
+    }
+  }
+}
+
 double solveSystemMomentum() {
   vect::vector3 momentum;
   for (size_t i = 0; i < objCount; i++) {
@@ -233,18 +378,37 @@ double solveSystemMomentum() {
 
 void solveSystem() {
   while (currTime < endTime) {
-
     // Solve integration
     // solveEulerIntegration(solveAccelsDirect);
-    solveRK4Integration(solveAccelsDirect);
-    // solveRKN76Integration(solveAccelsDirect);
+    // solveRK4Integration(solveAccelsDirect);
+    solveRKN76Integration(solveAccelsDirect);
+
+    // Build tree
+    // delete root;
+    // vect::vector3 lowBound = vect::vector3(-1,-1,-1);
+    // vect::vector3 highBound = vect::vector3(1,1,1);
+    // root = new TreeNode(0,lowBound,highBound-lowBound, pos1);
+    // for (size_t i = 1; i < objCount; i++) {
+    //   if (pos1[i].lessThan(highBound).all() && pos1[i].greaterThan(lowBound).all()) {
+    //     root->addObj(i,pos1);
+    //   }
+    // }
+    // solveRKN76Integration(solveAccelsTree);
+
+    // Ensure z = 0
+    if (displayDims == 2) {
+      for (size_t i = 0; i < objCount; i++) {
+        pos1[i].z = 0;
+        vel1[i].z = 0;
+      }
+    }
 
     // increment time and stepcount
     currTime += dt;
     stepCount ++;
 
     // Print status and save step
-    std::cout << " S" << saveCounter << "   t" << currTime << "   s" << stepCount << "   dt" << dt <<  "               \r";
+    std::cout << " S" << saveCounter << "   t" << currTime << "   s" << stepCount << "   dt" << dt << "   o" << objCount << "               \r";
     if (currTime > (saveCounter+1) * savePeriod) {
       // save step
       saveStep();
@@ -252,22 +416,34 @@ void solveSystem() {
       saveCounter ++;
       stepCount = 0;
     }
+
+    // Limit dt
+    dt = std::min(dt, savePeriod/2);
+    // dt = std::max(dt,0.000000000001);
+
+    solveMergesDirect();
+
   }
 }
 
 int main() {
 
+  std::srand(0);
+
   clearFile();
 
-  // for (size_t i = 0; i < objCount; i++) {
-  //   pos1[i].rand(-1,1);
-  //   vel1[i].rand(-0.05,0.05);
-  //   pos1[i].z = 0;
-  //   vel1[i].z = 0;
-  //   masses[i] = 1;
-  // }
+  for (size_t i = 0; i < objCount; i++) {
+    pos1[i].rand(-0.25,0.25);
+    vel1[i].rand(-0.1,0.1);
+    if (displayDims == 2) {
+      pos1[i].z = 0;
+      vel1[i].z = 0;
+    }
+    masses[i] = 1;
+  }
 
-  init2BodyTestObjs();
+
+  // init2BodyTestObjs();
 
   saveStep();
 

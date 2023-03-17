@@ -81,6 +81,8 @@ public:
   vector3 lessThan(vector3 const &obj);
   bool any();
   bool all();
+  double sum();
+  vector3 abs();
 
   void print();
   std::string string();
@@ -271,6 +273,12 @@ bool vector3::any() {
 }
 bool vector3::all() {
   return (this->x != 0) && (this->y != 0) && (this->z != 0);
+}
+double vector3::sum() {
+  return this->x + this->y + this->z;
+}
+vector3 vector3::abs() {
+  return vector3( std::abs(this->x),std::abs(this->y) ,std::abs(this->z));
 }
 
 std::string vector3::string() {

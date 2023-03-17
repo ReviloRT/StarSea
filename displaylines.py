@@ -56,13 +56,13 @@ with open("stars.txt", "r") as file:
             ax = plt.axes()
             ax.set(xlim=[-1,1],ylim=[-1,1])
             ax.plot(array[:,1,:],array[:,2,:])
-            ax.scatter(array[0,1,:],array[0,2,:])
+            ax.scatter(array[0,1,:],array[0,2,:],s=array[0,0,:]*10)
         else:
             ax = plt.axes(projection="3d")
             ax.set(xlim=[-1,1],ylim=[-1,1],zlim=[-1,1])
             for i in range(objCount):
                 ax.plot(array[:,1,i],array[:,2,i],array[:,3,i])
-            ax.scatter3D(array[0,1,:],array[0,2,:],array[0,3,:])
+            ax.scatter3D(array[0,1,:],array[0,2,:],array[0,3,:],s=array[0,0,:]*10)
 
         plt.pause(0.0001)
         array = numpy.roll(array,1,axis=0)
