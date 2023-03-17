@@ -1,23 +1,12 @@
 
+#ifndef GRAVSOLVER
+#define GRAVSOLVER
+
 #include <iostream>
 #include <fstream>
 
-#include "include/vectors.cpp"
-
-#define SAVEFILE "stars.txt"
-
-// 24.1839915231
-const int maxObjCount = 100;
-const double bigG = -0.0001;
-const int displayDims = 3;
-const double endTime = 100;
-// const double endTime = 24.1839915231;
-const double savePeriod = 0.1;
-// const double savePeriod = 24.1839915231/100;
-const double errorTollerance = 0.0000001;
-const double treeSigma = 0.1;
-const double softeningConst = 10000000;
-const double minMergeDist = 0.00001;
+#include "vectors.cpp"
+// #include "parameters.cpp"
 
 class TreeNode {
 public:
@@ -45,13 +34,10 @@ public:
   ~TreeNode();
 };
 
-int objCount = 100;
-double dt = 0.1;
 double currTime = 0;
 int stepCount = 0;
 int saveCounter = 0;
 TreeNode *root;
-
 
 const double SQRT21 = std::sqrt(21);
 vect::vector3 pos1[maxObjCount];
@@ -88,6 +74,18 @@ void init2BodyTestObjs() {
   vel1[0] = vect::vector3(0,0.05,0);
   pos1[1] = vect::vector3(0.5,0,0);
   vel1[1] = vect::vector3(0,-0.05,0);
+}
+
+void initRandomObjs() {
+  for (size_t i = 0; i < objCount; i++) {
+    pos1[i].rand(-startSpace,startSpace);
+    vel1[i].rand(-startSpeed,startSpeed);
+    if (displayDims == 2) {
+      pos1[i].z = 0;
+      vel1[i].z = 0;
+    }
+    masses[i] = 1;
+  }
 }
 
 vect::vector3 solveForce(vect::vector3 pos1, vect::vector3 pos2, double mass1, double mass2) {
@@ -338,6 +336,9 @@ void solveRKN76Integration(void (*accelFunc)(vect::vector3 *accels, vect::vector
     } else {
       dt *= 1.1;
     }
+    // Limit dt
+    dt = std::min(dt, savePeriod/2);
+    // dt = std::max(dt,0.000000000001);
     // std::cout << "Step: " << error << " " << dt << " " << (error > errorTollerance) <<std::endl;
 
   }
@@ -417,47 +418,13 @@ void solveSystem() {
       stepCount = 0;
     }
 
-    // Limit dt
-    dt = std::min(dt, savePeriod/2);
-    // dt = std::max(dt,0.000000000001);
-
     solveMergesDirect();
 
   }
 }
 
-int main() {
 
-  std::srand(0);
-
-  clearFile();
-
-  for (size_t i = 0; i < objCount; i++) {
-    pos1[i].rand(-0.25,0.25);
-    vel1[i].rand(-0.1,0.1);
-    if (displayDims == 2) {
-      pos1[i].z = 0;
-      vel1[i].z = 0;
-    }
-    masses[i] = 1;
-  }
-
-
-  // init2BodyTestObjs();
-
-  saveStep();
-
-  double initalMomentum = solveSystemMomentum();
-
-  solveSystem();
-
-  std::cout << "Inital Momentum: " << initalMomentum << "   Final Momentum: " << solveSystemMomentum();
-
-}
-
-
-
-
+#endif
 
 
 
